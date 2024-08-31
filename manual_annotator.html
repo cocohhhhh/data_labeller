@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>Data Annotation Task</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 90%;
+                margin: 0 auto;
+                padding: 20px;
+                text-align: center;
+                background-color: #f0f4f8;
+                color: #2d3748;
+            }
+            h1 {
+                margin-bottom: 10px;
+            }
+            .hints {
+                background-color: #e2e8f0;
+                color: #4a5568;
+                margin-bottom: 30px;
+                text-align: left;
+            }
+            .keyboard-hint {
+                display: inline-block;
+                background-color: #f0f0f0;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                padding: 2px 5px;
+                font-family: monospace;
+            }
+            #upload-section, #annotation-section {
+                margin-top: 20px;
+            }
+            #sampleText {
+                font-size: 18px;
+                margin: 30px 0;
+                padding: 20px;
+                border: 1px solid #e2e8f0;
+                background-color: #fff;
+                min-height: 100px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            #categoryButtons {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+            .category-button {
+                margin: 5px;
+                padding: 10px 15px;
+                font-size: 14px;
+                cursor: pointer;
+                border: 1px solid #4299e1;
+                background-color: #fff;
+                color: #4299e1;
+                border-radius: 5px;
+                transition: background-color 0.3s, color 0.3s;
+            }
+            .category-button.selected {
+                background-color: #4299e1;
+                color: white;
+            }
+            .navigation-button {
+                margin: 10px;
+                padding: 10px 20px;
+                font-size: 16px;
+                cursor: pointer;
+                background-color: #48bb78;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                transition: background-color 0.3s;
+            }
+            .navigation-button:hover {
+                background-color: #38a169;
+            }
+            #saveButton {
+                margin-top: 20px;
+                padding: 10px 20px;
+                font-size: 16px;
+                cursor: pointer;
+                background-color: #ed8936;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                transition: background-color 0.3s;
+            }
+            #saveButton:hover {
+                background-color: #dd6b20;
+            }
+            #progress {
+                font-size: 14px;
+                color: #666;
+                margin-bottom: 10px;
+            }
+            .csv-example {
+                margin: 10px auto;
+                max-width: 800px;
+                margin-bottom: 20px;
+            }
+            .csv-example table {
+                width: 100%;
+                border-collapse: collapse;
+                font-family: monospace;
+            }
+            .csv-example th, .csv-example td {
+                border: 1px solid #e9ecef;
+                padding: 8px;
+                text-align: left;
+            }
+            .csv-example th {
+                background-color: #e9ecef;
+            }
+            p {
+                font-size: 16px;
+                line-height: 1.5;
+                color: #333;
+            }
+
+            /* Updated styles for two-column layout */
+            #annotation-section {
+                display: flex;
+                flex-direction: row;
+                justify-content: left;
+                gap: 5%;  /* Add space between flex items */
+            }
+            .main-content {
+                flex: 1;
+                max-width: 70%;
+            }
+            .hints {
+                width: 20%;
+                position: sticky;
+                top: 20px;
+                background-color: #f9f9f9;
+                padding: 15px;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+            @media (max-width: 768px) {
+                #annotation-section {
+                    flex-direction: column;
+                    gap: 20px;  /* Adjust gap for mobile layout */
+                }
+                .main-content, .hints {
+                    width: 100%;
+                    max-width: 100%;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1>Data Annotation</h1>
+        <div id="upload-section">
+            <p>Upload a CSV file to start annotating</p>
+            <p>The first column should contain the data, and subsequent columns should be category names.</p>
+            
+            <br>
+            <p>Example CSV format:</p>
+            <div class="csv-example">
+                <table>
+                    <tr>
+                        <th>data</th>
+                        <th>cat1</th>
+                        <th>cat2</th>
+                        <th>cat3</th>
+                        <th>...</th>
+                    </tr>
+                    <tr>
+                        <td>"This is the first data sample"</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>"Another data sample here"</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>"Yet another data sample"</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <input type="file" id="fileInput" accept=".csv">
+            <button id="startButton">Start Annotation</button>
+        </div>
+
+        <div id="annotation-section" style="display:none;">
+            <div class="hints">
+                <h3>Instructions</h3>
+                <p>- Read the text and select appropriate categories by clicking on the buttons.</p>
+                <p>- Navigate using the "Previous" and "Next" buttons, or use keyboard shortcuts:</p>
+                <p>&nbsp;&nbsp;<span class="keyboard-hint">A</span> for previous, <span class="keyboard-hint">D</span> for next.</p>
+                <br>
+                <p>- Don't forget to save your annotations when you're done!</p>
+            </div>
+            <div class="main-content">
+                <p id="progress"></p>
+                <div id="sampleText"></div>
+                <div id="categoryButtons"></div>
+                <button class="navigation-button" onclick="previous()">Previous</button>
+                <button class="navigation-button" onclick="next()">Next</button>
+                <br>
+                <button id="saveButton" onclick="saveAnnotations()">Save Annotations</button>
+            </div>
+        </div>
+
+        <script src="script.js"></script>
+    </body>
+
+</html>
