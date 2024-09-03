@@ -3,7 +3,7 @@
 
     <head>
         <meta charset="UTF-8">
-        <title>Data Annotation Task</title>
+        <title>Data Annotation Tool</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -82,17 +82,19 @@
             }
             #saveButton {
                 margin-top: 20px;
-                padding: 10px 20px;
-                font-size: 16px;
+                padding: 8px 15px;
+                font-size: 14px;
                 cursor: pointer;
-                background-color: #ed8936;
-                color: white;
+                background-color: #cbd5e0;
+                color: #2d3748;
                 border: none;
-                border-radius: 5px;
-                transition: background-color 0.3s;
+                border-radius: 4px;
+                transition: background-color 0.3s, color 0.3s;
+                align-self: center; /* Center the button within the data-field */
             }
             #saveButton:hover {
-                background-color: #dd6b20;
+                background-color: #a0aec0;
+                color: #1a202c;
             }
             #progress {
                 font-size: 14px;
@@ -127,12 +129,11 @@
             #annotation-section {
                 display: flex;
                 flex-direction: row;
-                justify-content: left;
-                gap: 5%;  /* Add space between flex items */
+                justify-content: space-between;
+                gap: 2%;
             }
             .main-content {
-                flex: 1;
-                max-width: 70%;
+                width: 75%;  /* Increased width since we removed the hints section */
             }
             .hints {
                 width: 20%;
@@ -152,6 +153,89 @@
                     width: 100%;
                     max-width: 100%;
                 }
+            }
+
+            /* New styles for data field */
+            .data-field {
+                width: 20%;
+                display: flex;
+                flex-direction: column;
+            }
+            .data-grid {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                grid-template-rows: repeat(5, 1fr);
+                gap: 5px;
+                margin-bottom: 10px;
+            }
+            .data-item {
+                padding: 10px 5px;
+                text-align: center;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 12px;
+                position: relative;
+            }
+            .data-item.unlabeled {
+                background-color: #e2e8f0;
+            }
+            .data-item.labeled {
+                background-color: #48bb78;
+                color: white;
+            }
+            .data-item.questioned {
+                background-color: #ed8936;
+                color: white;
+            }
+            .data-item.current {
+                border: 2px solid #4299e1;
+            }
+            .question-button {
+                position: absolute;
+                top: 2px;
+                right: 2px;
+                background-color: #4299e1;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 16px;
+                height: 16px;
+                font-size: 10px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .page-navigation {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 10px;
+            }
+            .page-button {
+                padding: 5px 10px;
+                background-color: #4299e1;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+            }
+            .not-sure-button {
+                margin-top: 10px;
+                padding: 8px 15px;
+                font-size: 14px;
+                cursor: pointer;
+                background-color: #ed8936;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                transition: background-color 0.3s;
+            }
+            .not-sure-button:hover {
+                background-color: #dd6b20;
+            }
+            .data-item.not-sure {
+                background-color: #ed8936;
+                color: white;
             }
         </style>
     </head>
@@ -200,23 +284,30 @@
             <button id="startButton">Start Annotation</button>
         </div>
 
-        <div id="annotation-section" style="display:none;">
-            <div class="hints">
-                <h3>Instructions</h3>
-                <p>- Read the text and select appropriate categories by clicking on the buttons.</p>
-                <p>- Navigate using the "Previous" and "Next" buttons, or use keyboard shortcuts:</p>
-                <p>&nbsp;&nbsp;<span class="keyboard-hint">A</span> for previous, <span class="keyboard-hint">D</span> for next.</p>
-                <br>
-                <p>- Don't forget to save your annotations when you're done!</p>
+        <div id="annotation-section" style="display: none;">
+            <div class="data-field">
+                <div class="data-grid">
+                    <!-- Data items will be dynamically added here -->
+                </div>
+                <div class="page-navigation">
+                    <button class="page-button" onclick="previousPage()">Previous</button>
+                    <span id="page-info">Page 1 of 1</span>
+                    <button class="page-button" onclick="nextPage()">Next</button>
+                </div>
+                <button id="saveButton" onclick="saveAnnotations()">Download Annotations</button>
             </div>
             <div class="main-content">
                 <p id="progress"></p>
                 <div id="sampleText"></div>
                 <div id="categoryButtons"></div>
-                <button class="navigation-button" onclick="previous()">Previous</button>
-                <button class="navigation-button" onclick="next()">Next</button>
-                <br>
-                <button id="saveButton" onclick="saveAnnotations()">Save Annotations</button>
+                <div class="navigation-controls">
+                    <button class="not-sure-button" onclick="toggleNotSure()">Flag for review</button>
+                    <br>
+                    <div>
+                        <button class="navigation-button" onclick="previous()">Previous</button>
+                        <button class="navigation-button" onclick="next()">Next</button>
+                    </div>
+                </div>
             </div>
         </div>
 
