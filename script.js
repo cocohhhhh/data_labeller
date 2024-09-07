@@ -27,11 +27,21 @@ document.getElementById('startButton').addEventListener('click', function() {
 });
 
 function initializeAnnotation() {
+    console.log("Initializing annotation...");
     document.getElementById('upload-section').style.display = 'none';
     document.getElementById('annotation-section').style.display = 'flex';
     createCategoryButtons();
     notSureStatus = new Array(lines.length).fill(false);
-    itemColors = new Array(lines.length).fill('unlabeled'); // Initialize all items as unlabeled
+    itemColors = lines.map((line, index) => {
+        const data = line.split(',');
+        console.log(`Line ${index}:`, data);
+        if (data.slice(1).some(value => value && value.trim() === '1')) {
+            return 'labeled';
+        } else {
+            return 'unlabeled';
+        }
+    });
+    console.log("Item colors:", itemColors);
     showCurrentLine();
     populateDataGrid(0);
     updatePageInfo();
@@ -54,26 +64,34 @@ function createCategoryButtons() {
 
 function showCurrentLine() {
     const data = lines[currentLine].split(',');
-    document.getElementById('sampleText').textContent = data[0];
+    document.getElementById('sampleText').textContent = data[0] || '';
     document.getElementById('progress').textContent = `${currentLine + 1}/${lines.length}`;
 
     const buttons = document.getElementsByClassName('category-button');
-    console.log("Number of buttons:", buttons.length);
-    console.log("Number of data columns:", data.length);
     for (let i = 0; i < buttons.length; i++) {
-        console.log(`Button ${i}:`, buttons[i].textContent, "Data:", data[i + 1]);
-        buttons[i].classList.toggle('selected', data[i + 1].trim() === '1');
+        const value = data[i + 1] ? data[i + 1].trim() : '0';
+        buttons[i].classList.toggle('selected', value === '1');
     }
 
     const notSureButton = document.querySelector('.not-sure-button');
-    notSureButton.classList.toggle('selected', notSureStatus[currentLine]);
+    if (notSureButton) {
+        notSureButton.classList.toggle('selected', notSureStatus[currentLine]);
+    }
 }
 
 function toggleCategory(index) {
     console.log("Toggling category at index:", index);
-    const data = lines[currentLine].split(',');
+    let data = lines[currentLine].split(',');
     console.log("Before toggle:", data);
-    data[index + 1] = data[index + 1].trim() === '1' ? '0' : '1';
+    
+    // Ensure the data array has enough elements
+    while (data.length <= headers.length) {
+        data.push('0');
+    }
+    
+    // Toggle the value, handling potential undefined or empty values
+    data[index + 1] = (data[index + 1] && data[index + 1].trim() === '1') ? '0' : '1';
+    
     console.log("After toggle:", data);
     lines[currentLine] = data.join(',');
     showCurrentLine();
@@ -87,6 +105,7 @@ function toggleNotSure() {
 }
 
 function populateDataGrid(startIndex) {
+    console.log("Populating data grid. Start index:", startIndex);
     const dataGrid = document.querySelector('.data-grid');
     dataGrid.innerHTML = '';
     for (let i = startIndex; i < startIndex + itemsPerPage && i < totalItems; i++) {
@@ -95,14 +114,15 @@ function populateDataGrid(startIndex) {
         item.textContent = i + 1;
         item.onclick = () => selectItem(i);
         dataGrid.appendChild(item);
+        console.log(`Added item ${i + 1} with class ${itemColors[i]}`);
     }
-    console.log("Grid populated. Start index:", startIndex, "End index:", Math.min(startIndex + itemsPerPage, totalItems));
+    console.log("Grid populated. Items in grid:", dataGrid.children.length);
     updatePageInfo();
 }
 
 function isItemLabeled(index) {
     const data = lines[index].split(',');
-    return data.slice(1, -1).some(value => value.trim() === '1');
+    return data.slice(1).some(value => value.trim() === '1');
 }
 
 function isItemNotSure(index) {
@@ -194,13 +214,17 @@ function saveAnnotations() {
 
         let csvContent = "";
         
-        // Add all headers
+        // Add headers
         csvContent += headers.join(",") + "\n";
 
-        // Add data rows, including all category columns
+        // Add data rows
         lines.forEach((line, index) => {
             const columns = line.split(',');
-            csvContent += columns.join(",") + "\n";
+            const saveColumns = headers.map((header, i) => {
+                if (i === 0) return columns[0]; // Always include the first column (text)
+                return (columns[i] && columns[i].trim() === '1') ? '1' : '';
+            });
+            csvContent += saveColumns.join(",") + "\n";
         });
 
         // Create a Blob with the CSV content
